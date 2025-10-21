@@ -15,7 +15,17 @@ func main() {
 		scanner.Scan()
 		userInput := scanner.Text()
 		parts := cleanInput(userInput)
-		fmt.Printf("Your command was: %v\n", parts[0])
+		if len(parts) == 0 {
+			continue
+		}
+		if command, ok := supportedCommands[parts[0]]; ok {
+			err := command.callback()
+			if err != nil {
+				fmt.Printf("Error when executing command %v: %v\n", command.name, err)
+			}
+		} else {
+			fmt.Println("Unknown command")
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatalf("error during reading input: %v\n", err)
