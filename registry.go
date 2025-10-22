@@ -28,6 +28,16 @@ func init() {
 		description: "Displays a help message",
 		callback:    printHelp,
 	}
+	supportedCommands["map"] = cliCommand{
+		name:        "map",
+		description: "Displays the names of 20 location areas in the Pokemon world",
+		callback:    displayMap,
+	}
+	supportedCommands["mapb"] = cliCommand{
+		name:        "mapb",
+		description: "Displays the names of previous 20 location areas in the Pokemon world",
+		callback:    displayMapb,
+	}
 }
 
 func commandExit() error {
@@ -43,5 +53,13 @@ func printHelp() error {
 	for _, v := range supportedCommands {
 		fmt.Printf("%v: %v\n", v.name, v.description)
 	}
+	return nil
+}
+
+func displayMap() error {
+	return nil
+}
+
+func displayMapb() error {
 	return nil
 }
