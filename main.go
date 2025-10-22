@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/hreshchyshynt/pokedex/pokeapi"
 	"log"
 	"os"
 	"strings"
@@ -10,6 +11,15 @@ import (
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+	client := pokeapi.NewClient()
+	fmt.Printf("pokeapi client: %v\n", client)
+	areasResponse, err := client.GetAreas()
+	if err != nil {
+		fmt.Printf("error getting areas: %v\n", err)
+	}
+
+	fmt.Printf("Areas received: %v", areasResponse)
+
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
