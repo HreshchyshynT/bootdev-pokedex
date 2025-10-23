@@ -18,7 +18,13 @@ func main() {
 		fmt.Printf("error getting areas: %v\n", err)
 	}
 
-	fmt.Printf("Areas received: %v", areasResponse)
+	fmt.Printf("Areas received: %v\n", areasResponse)
+	for i, la := range areasResponse.Results {
+		fmt.Printf("Item %v: %v\n", i, la)
+		if i > 9 {
+			break
+		}
+	}
 
 	for {
 		fmt.Print("Pokedex > ")

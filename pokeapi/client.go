@@ -47,10 +47,10 @@ func (c *Client) GetAreas() (Response[LocationArea], error) {
 }
 
 type Response[T any] struct {
-	Count    int
-	Next     string
-	Previous string
-	Results  []T
+	Count    int    `json:"count"`
+	Next     string `json:"next"`
+	Previous string `json:"previous"`
+	Results  []T    `json:"results"`
 }
 
 func (r Response[T]) String() string {
@@ -58,6 +58,10 @@ func (r Response[T]) String() string {
 }
 
 type LocationArea struct {
-	name string
-	url  string
+	Name string `json:"name"`
+	Url  string `json:"url"`
+}
+
+func (la LocationArea) String() string {
+	return fmt.Sprintf("LocationArea(name=%v, url=%v)", la.Name, la.Url)
 }
