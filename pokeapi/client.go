@@ -8,16 +8,18 @@ import (
 )
 
 const (
-	locationAreasUrl = "https://pokeapi.co/api/v2/location-area"
+	locationAreasUrl = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
 )
 
 type Client struct {
 	httpClient *http.Client
+	cache      *Cache
 }
 
 func NewClient() *Client {
 	return &Client{
 		httpClient: http.DefaultClient,
+		cache:      NewCache(),
 	}
 }
 
@@ -25,9 +27,21 @@ func (c *Client) String() string {
 	return fmt.Sprintf("PokedexApiClient: http is nil %v", c.httpClient == nil)
 }
 
-func (c *Client) GetAreas() (Response[LocationArea], error) {
+func (c *Client) GetAreas(url string) (Response[LocationArea], error) {
+	requestUrl := locationAreasUrl
+	if len(url) > 0 {
+		requestUrl = url
+	}
+
 	var response Response[LocationArea]
-	res, err := c.httpClient.Get(locationAreasUrl)
+
+	if data, ok := c.cache.Get(requestUrl); ok {
+		err := json.Unmarshal(data, &response)
+		if err == nil {
+			return response, nil
+		}
+	}
+	res, err := c.httpClient.Get(requestUrl)
 	if err != nil {
 		return response, fmt.Errorf("can not make request for location areas: %v", err)
 	}
@@ -42,6 +56,8 @@ func (c *Client) GetAreas() (Response[LocationArea], error) {
 	if err != nil {
 		return response, fmt.Errorf("error unmarshaling response: %v\n", err)
 	}
+
+	c.cache.Put(requestUrl, data)
 
 	return response, nil
 }

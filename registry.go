@@ -3,20 +3,33 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/hreshchyshynt/pokedex/pokeapi"
 )
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*Config) error
+}
+
+type Config struct {
+	Next string
+	Prev string
+}
+
+func NewConfig() *Config {
+	return &Config{}
 }
 
 var supportedCommands map[string]cliCommand
+var apiClient *pokeapi.Client
 
 // run automatically before main function
 // we have to init supportedCommands here to avoid
 // initialization cycle
 func init() {
+	apiClient = pokeapi.NewClient()
 	supportedCommands = make(map[string]cliCommand)
 	supportedCommands["exit"] = cliCommand{
 		name:        "exit",
@@ -40,13 +53,13 @@ func init() {
 	}
 }
 
-func commandExit() error {
+func commandExit(config *Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func printHelp() error {
+func printHelp(config *Config) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
@@ -56,10 +69,28 @@ func printHelp() error {
 	return nil
 }
 
-func displayMap() error {
+func displayMap(config *Config) error {
+	res, err := apiClient.GetAreas(config.Next)
+	if err != nil {
+		return err
+	}
+	for _, la := range res.Results {
+		fmt.Printf("%v\n", la.Name)
+	}
+	config.Next = res.Next
+	config.Prev = res.Previous
 	return nil
 }
 
-func displayMapb() error {
+func displayMapb(config *Config) error {
+	res, err := apiClient.GetAreas(config.Prev)
+	if err != nil {
+		return err
+	}
+	for _, la := range res.Results {
+		fmt.Printf("%v\n", la.Name)
+	}
+	config.Next = res.Next
+	config.Prev = res.Previous
 	return nil
 }
