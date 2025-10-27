@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/hreshchyshynt/pokedex/internal/pokecache"
 )
 
 const (
@@ -13,13 +16,13 @@ const (
 
 type Client struct {
 	httpClient *http.Client
-	cache      *Cache
+	cache      pokecache.Cache
 }
 
 func NewClient() *Client {
 	return &Client{
 		httpClient: http.DefaultClient,
-		cache:      NewCache(),
+		cache:      pokecache.NewCache(time.Duration(10) * time.Second),
 	}
 }
 

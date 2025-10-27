@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/hreshchyshynt/pokedex/internal/pokeapi"
 	"os"
-
-	"github.com/hreshchyshynt/pokedex/pokeapi"
 )
 
 type cliCommand struct {
