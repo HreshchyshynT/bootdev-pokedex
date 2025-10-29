@@ -9,7 +9,8 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config) error
+	// command payload
+	callback func([]string, *Config) error
 }
 
 type Config struct {
@@ -50,15 +51,20 @@ func init() {
 		description: "Displays the names of previous 20 location areas in the Pokemon world",
 		callback:    displayMapb,
 	}
+	supportedCommands["explore"] = cliCommand{
+		name:        "explore",
+		description: "List of all the Pokémon on the given location",
+		callback:    explore,
+	}
 }
 
-func commandExit(config *Config) error {
+func commandExit(input []string, config *Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func printHelp(config *Config) error {
+func printHelp(input []string, config *Config) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
@@ -68,7 +74,7 @@ func printHelp(config *Config) error {
 	return nil
 }
 
-func displayMap(config *Config) error {
+func displayMap(input []string, config *Config) error {
 	res, err := apiClient.GetAreas(config.Next)
 	if err != nil {
 		return err
@@ -81,7 +87,7 @@ func displayMap(config *Config) error {
 	return nil
 }
 
-func displayMapb(config *Config) error {
+func displayMapb(input []string, config *Config) error {
 	res, err := apiClient.GetAreas(config.Prev)
 	if err != nil {
 		return err
@@ -91,5 +97,30 @@ func displayMapb(config *Config) error {
 	}
 	config.Next = res.Next
 	config.Prev = res.Previous
+	return nil
+}
+
+func explore(input []string, config *Config) error {
+	if len(input) == 0 {
+		return fmt.Errorf("Location name should be provided.")
+	}
+	locationName := input[0]
+	fmt.Printf("Exploring %v...\n", locationName)
+
+	res, err := apiClient.GetPokemonsOnLocation(locationName)
+	if err != nil {
+		return err
+	}
+
+	if len(res.Pokemons) == 0 {
+		fmt.Println("No Pokemons found")
+		return nil
+	}
+
+	fmt.Println("Found Pokemon:")
+	for _, pokemon := range res.Pokemons {
+		fmt.Printf(" - %v\n", pokemon.Name)
+	}
+
 	return nil
 }

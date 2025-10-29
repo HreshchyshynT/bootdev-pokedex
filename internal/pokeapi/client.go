@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	locationAreasUrl = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
+	locationAreasUrl       = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
+	locationAreaDetailsUrl = "https://pokeapi.co/api/v2/location-area/"
 )
 
 type Client struct {
@@ -30,13 +31,13 @@ func (c *Client) String() string {
 	return fmt.Sprintf("PokedexApiClient: http is nil %v", c.httpClient == nil)
 }
 
-func (c *Client) GetAreas(url string) (Response[LocationArea], error) {
+func (c *Client) GetAreas(url string) (Response[LocationAreaShort], error) {
 	requestUrl := locationAreasUrl
 	if len(url) > 0 {
 		requestUrl = url
 	}
 
-	var response Response[LocationArea]
+	var response Response[LocationAreaShort]
 
 	if data, ok := c.cache.Get(requestUrl); ok {
 		err := json.Unmarshal(data, &response)
@@ -65,22 +66,38 @@ func (c *Client) GetAreas(url string) (Response[LocationArea], error) {
 	return response, nil
 }
 
-type Response[T any] struct {
-	Count    int    `json:"count"`
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
-	Results  []T    `json:"results"`
-}
+func (c *Client) GetPokemonsOnLocation(name string) (LocationAreaDetails, error) {
+	requestUrl := locationAreaDetailsUrl + name
 
-func (r Response[T]) String() string {
-	return fmt.Sprintf("pokeapi.Response(count=%v, next=%v, previous=%v, results len=%v)\n", r.Count, r.Next, r.Previous, len(r.Results))
-}
+	var response LocationAreaDetails
 
-type LocationArea struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
-}
+	if data, ok := c.cache.Get(requestUrl); ok {
+		err := json.Unmarshal(data, &response)
+		if err == nil {
+			return response, nil
+		}
+	}
+	res, err := c.httpClient.Get(requestUrl)
+	if err != nil {
+		return response, fmt.Errorf("can not make request for location area details: %v", err)
+	}
 
-func (la LocationArea) String() string {
-	return fmt.Sprintf("LocationArea(name=%v, url=%v)", la.Name, la.Url)
+	if res.StatusCode == http.StatusNotFound {
+		return response, fmt.Errorf("Location \"%v\" not found", name)
+	}
+
+	defer res.Body.Close()
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return response, fmt.Errorf("error reading reading response: %v\n", err)
+	}
+	err = json.Unmarshal(data, &response)
+	if err != nil {
+		return response, fmt.Errorf("error unmarshaling response: %v\n", err)
+	}
+
+	c.cache.Put(requestUrl, data)
+
+	return response, nil
 }

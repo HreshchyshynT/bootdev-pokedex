@@ -21,7 +21,7 @@ func main() {
 			continue
 		}
 		if command, ok := supportedCommands[parts[0]]; ok {
-			err := command.callback(config)
+			err := command.callback(parts[1:], config)
 			if err != nil {
 				fmt.Printf("Error when executing command %v: %v\n", command.name, err)
 			}
