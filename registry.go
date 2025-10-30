@@ -102,7 +102,7 @@ func displayMapb(args []string, config *Config) error {
 
 func explore(args []string, config *Config) error {
 	if len(args) == 0 {
-		return fmt.Errorf("Location name should be provided.")
+		return fmt.Errorf("Location name must be provided.")
 	}
 	locationName := args[0]
 	fmt.Printf("Exploring %v...\n", locationName)

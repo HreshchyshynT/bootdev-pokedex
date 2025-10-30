@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 )
 
-type Pokemon struct {
+type PokemonShort struct {
 	Name string
 	Url  string
 }
 
-func (p *Pokemon) UnmarshalJSON(data []byte) error {
+func (p *PokemonShort) UnmarshalJSON(data []byte) error {
 	var decoded struct {
 		Pokemon struct {
 			Name string `json:"name"`

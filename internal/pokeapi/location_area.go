@@ -12,9 +12,9 @@ func (las LocationAreaShort) String() string {
 }
 
 type LocationAreaDetails struct {
-	Id       int       `json:"id"`
-	Name     string    `json:"name"`
-	Pokemons []Pokemon `json:"pokemon_encounters"`
+	Id       int            `json:"id"`
+	Name     string         `json:"name"`
+	Pokemons []PokemonShort `json:"pokemon_encounters"`
 
 	// {
 	//   "id": 1,
