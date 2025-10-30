@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/hreshchyshynt/pokedex/internal/pokeapi"
+	"math/rand"
 	"os"
+
+	"github.com/hreshchyshynt/pokedex/internal/pokeapi"
 )
 
 type cliCommand struct {
@@ -55,6 +57,11 @@ func init() {
 		name:        "explore",
 		description: "List of all the Pokémon on the given location",
 		callback:    explore,
+	}
+	supportedCommands["catch"] = cliCommand{
+		name:        "catch",
+		description: "Catching Pokemon adds them to the user's Pokedex",
+		callback:    catchPokemon,
 	}
 }
 
@@ -120,6 +127,39 @@ func explore(args []string, config *Config) error {
 	fmt.Println("Found Pokemon:")
 	for _, pokemon := range res.Pokemons {
 		fmt.Printf(" - %v\n", pokemon.Name)
+	}
+
+	return nil
+}
+
+func catchPokemon(args []string, config *Config) error {
+	if len(args) == 0 {
+		return fmt.Errorf("Pokemon name must be provided.")
+	}
+	name := args[0]
+	fmt.Printf("Throwing a Pokeball at %v...\n", name)
+
+	pokemon, err := apiClient.GetPokemonDetails(name)
+	if err != nil {
+		return err
+	}
+
+	var percentRequired float32
+	if pokemon.BaseExperience < 50 {
+		percentRequired = 0.3
+	} else if pokemon.BaseExperience < 90 {
+		percentRequired = 0.5
+	} else {
+		percentRequired = 0.75
+	}
+
+	barrier := int(float32(pokemon.BaseExperience) * percentRequired)
+	roll := rand.Intn(pokemon.BaseExperience)
+
+	if roll >= barrier {
+		fmt.Printf("%v was caught!\n", name)
+	} else {
+		fmt.Printf("%v escaped!\n", name)
 	}
 
 	return nil
