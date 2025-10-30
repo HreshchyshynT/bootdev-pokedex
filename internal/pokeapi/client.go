@@ -13,6 +13,7 @@ import (
 const (
 	locationAreasUrl       = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
 	locationAreaDetailsUrl = "https://pokeapi.co/api/v2/location-area/"
+	pokemonDetailsUrl      = "https://pokeapi.co/api/v2/pokemon/"
 )
 
 type Client struct {
@@ -90,14 +91,52 @@ func (c *Client) GetPokemonsOnLocation(name string) (LocationAreaDetails, error)
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return response, fmt.Errorf("error reading reading response: %v\n", err)
+		return response, fmt.Errorf("error reading reading response: %v", err)
 	}
 	err = json.Unmarshal(data, &response)
 	if err != nil {
-		return response, fmt.Errorf("error unmarshaling response: %v\n", err)
+		return response, fmt.Errorf("error unmarshaling response: %v", err)
 	}
 
 	c.cache.Put(requestUrl, data)
+
+	return response, nil
+}
+
+func (c *Client) GetPokemonDetails(name string) (PokemonDetails, error) {
+	requestUrl := pokemonDetailsUrl + name
+
+	var response PokemonDetails
+
+	if data, ok := c.cache.Get(requestUrl); ok {
+		err := json.Unmarshal(data, &response)
+		if err == nil {
+			return response, nil
+		}
+	}
+
+	res, err := c.httpClient.Get(requestUrl)
+	if err != nil {
+		return response, fmt.Errorf("can not get pokemon details: %v", err)
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return response, fmt.Errorf("Pokemon with name %v not found", name)
+	}
+
+	defer res.Body.Close()
+
+	data, err := io.ReadAll(res.Body)
+
+	if err != nil {
+		return response, fmt.Errorf("error reading response: %v", err)
+	}
+
+	err = json.Unmarshal(data, &response)
+
+	if err != nil {
+		return response, fmt.Errorf("error unmarshaling response: %v", err)
+	}
 
 	return response, nil
 }

@@ -26,3 +26,9 @@ func (p *PokemonShort) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+
+type PokemonDetails struct {
+	Name           string `json:"name"`
+	Url            string `json:"url"`
+	BaseExperience int    `json:"base_experience"`
+}
