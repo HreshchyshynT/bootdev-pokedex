@@ -26,13 +26,16 @@ func NewConfig() *Config {
 
 var supportedCommands map[string]cliCommand
 var apiClient *pokeapi.Client
+var pokedex map[string]pokeapi.PokemonDetails
 
 // run automatically before main function
 // we have to init supportedCommands here to avoid
 // initialization cycle
 func init() {
 	apiClient = pokeapi.NewClient()
+	pokedex = make(map[string]pokeapi.PokemonDetails)
 	supportedCommands = make(map[string]cliCommand)
+
 	supportedCommands["exit"] = cliCommand{
 		name:        "exit",
 		description: "Exit the Pokedex",
@@ -137,6 +140,11 @@ func catchPokemon(args []string, config *Config) error {
 		return fmt.Errorf("Pokemon name must be provided.")
 	}
 	name := args[0]
+
+	if _, ok := pokedex[name]; ok {
+		fmt.Printf("%v already in pokedex!\n", name)
+		return nil
+	}
 	fmt.Printf("Throwing a Pokeball at %v...\n", name)
 
 	pokemon, err := apiClient.GetPokemonDetails(name)
@@ -157,6 +165,7 @@ func catchPokemon(args []string, config *Config) error {
 	roll := rand.Intn(pokemon.BaseExperience)
 
 	if roll >= barrier {
+		pokedex[name] = pokemon
 		fmt.Printf("%v was caught!\n", name)
 	} else {
 		fmt.Printf("%v escaped!\n", name)
