@@ -10,7 +10,7 @@ type cliCommand struct {
 	name        string
 	description string
 	// command payload
-	callback func([]string, *Config) error
+	callback func(args []string, config *Config) error
 }
 
 type Config struct {
@@ -58,13 +58,13 @@ func init() {
 	}
 }
 
-func commandExit(input []string, config *Config) error {
+func commandExit(args []string, config *Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func printHelp(input []string, config *Config) error {
+func printHelp(args []string, config *Config) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
@@ -74,7 +74,7 @@ func printHelp(input []string, config *Config) error {
 	return nil
 }
 
-func displayMap(input []string, config *Config) error {
+func displayMap(args []string, config *Config) error {
 	res, err := apiClient.GetAreas(config.Next)
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func displayMap(input []string, config *Config) error {
 	return nil
 }
 
-func displayMapb(input []string, config *Config) error {
+func displayMapb(args []string, config *Config) error {
 	res, err := apiClient.GetAreas(config.Prev)
 	if err != nil {
 		return err
@@ -100,11 +100,11 @@ func displayMapb(input []string, config *Config) error {
 	return nil
 }
 
-func explore(input []string, config *Config) error {
-	if len(input) == 0 {
+func explore(args []string, config *Config) error {
+	if len(args) == 0 {
 		return fmt.Errorf("Location name should be provided.")
 	}
-	locationName := input[0]
+	locationName := args[0]
 	fmt.Printf("Exploring %v...\n", locationName)
 
 	res, err := apiClient.GetPokemonsOnLocation(locationName)
