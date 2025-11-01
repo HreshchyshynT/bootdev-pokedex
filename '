@@ -1,0 +1,70 @@
+package pokeapi
+
+import (
+	"encoding/json"
+)
+
+type PokemonShort struct {
+	Name string
+	Url  string
+}
+
+func (p *PokemonShort) UnmarshalJSON(data []byte) error {
+	var decoded struct {
+		Pokemon struct {
+			Name string `json:"name"`
+			Url  string `json:"url"`
+		} `json:"pokemon"`
+	}
+
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return err
+	}
+
+	p.Name = decoded.Pokemon.Name
+	p.Url = decoded.Pokemon.Url
+
+	return nil
+}
+
+// Name: pidgey
+// Height: 3
+// Weight: 18
+// Stats:
+//   -hp: 40
+//   -attack: 45
+//   -defense: 40
+//   -special-attack: 35
+//   -special-defense: 35
+//   -speed: 56
+// Types:
+//   - normal
+//   - flying
+
+// "id": 35,
+//   "name": "clefairy",
+//   "base_experience": 113,
+//   "height": 6,
+//   "is_default": true,
+//   "order": 56,
+//   "weight": 75,
+
+type PokemonDetails struct {
+	Name           string `json:"name"`
+	Url            string `json:"url"`
+	BaseExperience int    `json:"base_experience"`
+	Height         int    `json:"height"`
+	Weight         int
+	Stats []Stat `json:"stats"`
+	Types []Type `json:"types"`
+}
+
+type Stat struct {
+	Value int
+	Name  string
+}
+
+type Type struct {
+	Slot int
+	Name string
+}

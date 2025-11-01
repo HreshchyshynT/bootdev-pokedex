@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 
 	"github.com/hreshchyshynt/pokedex/internal/pokeapi"
 )
@@ -65,6 +66,11 @@ func init() {
 		name:        "catch",
 		description: "Catching Pokemon adds them to the user's Pokedex",
 		callback:    catchPokemon,
+	}
+	supportedCommands["inspect"] = cliCommand{
+		name:        "inspect",
+		description: "Allow players to see details about a Pokemon if they have seen it before (or in our case, caught it)",
+		callback:    inspectPokemon,
 	}
 }
 
@@ -170,6 +176,38 @@ func catchPokemon(args []string, config *Config) error {
 	} else {
 		fmt.Printf("%v escaped!\n", name)
 	}
+
+	return nil
+}
+
+func inspectPokemon(args []string, config *Config) error {
+	if len(args) == 0 {
+		return fmt.Errorf("Pokemon name must be provided.")
+	}
+	name := args[0]
+	pokemon, ok := pokedex[name]
+
+	if !ok {
+		return fmt.Errorf("You didn't see %v yet!", name)
+	}
+
+	buffer := &strings.Builder{}
+
+	fmt.Fprintf(buffer, "Name: %v\n", name)
+	fmt.Fprintf(buffer, "Height: %v\n", pokemon.Height)
+	fmt.Fprintf(buffer, "Weight: %v\n", pokemon.Weight)
+	buffer.WriteString("Stats:\n")
+	for _, stat := range pokemon.Stats {
+		fmt.Fprintf(buffer, "  -%v: %v\n", stat.Name, stat.Value)
+	}
+
+	buffer.WriteString("Types:\n")
+
+	for _, t := range pokemon.Types {
+		fmt.Fprintf(buffer, "  - %v\n", t.Name)
+	}
+
+	fmt.Println(buffer.String())
 
 	return nil
 }
